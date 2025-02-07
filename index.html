@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Safe Haven</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { background-color: #f5f5f5; font-family: 'Roboto', sans-serif; }
+    header, section { animation: fadeIn 1s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .scrollable {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .highlight {
+      background: #ffeb3b;
+      border-radius: 10px;
+      padding: 5px 10px;
+      display: inline-block;
+      animation: highlight 1.5s ease-in-out infinite;
+    }
+
+    @keyframes highlight {
+      0%, 100% {
+        background: #ffeb3b;
+        box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+      }
+      50% {
+        background: #fff176;
+        box-shadow: 0 0 30px rgba(255, 255, 0, 1);
+      }
+    }
+
+    .slide-down {
+      animation: slide-down 0.5s ease-in-out forwards;
+    }
+
+    @keyframes slide-down {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .achievement-badge {
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+    }
+
+    .data-log {
+      margin-top: 20px;
+    }
+
+    /* Responsive styles for smaller devices */
+    @media (max-width: 768px) {
+      .flex-wrap {
+        flex-direction: column;
+      }
+      .flex-wrap > div {
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+  <script>
+    // Array of possible chatbot responses with added messages
+    const responses = [
+      "I'm here for you. How can I assist you today?",
+      "It's okay to feel this way. Let's talk about it.",
+      "Remember to take deep breaths. You're doing great.",
+      "Can you tell me more about what's on your mind?",
+      "I'm here to listen. What's troubling you?",
+      "It's important to take things one step at a time.",
+      "You're not alone. I'm here with you.",
+      "Let's work through this together.",
+      "What can I do to help you feel better?",
+      "It's okay to ask for help. You're doing the right thing.",
+      "How have you been feeling lately?",
+      "Let's focus on some positive thoughts.",
+      "What are some things that make you happy?",
+      "It's important to take care of yourself.",
+      "Can you describe how you're feeling right now?",
+      "I'm here to support you. Let's talk.",
+      "It's okay to take a break and relax.",
+      "What are some activities that help you relax?",
+      "Let's find some ways to manage your stress.",
+      "You're doing a great job. Keep going.",
+      "It's okay to feel overwhelmed. Let's talk about it.",
+      "What are some things you're grateful for?",
+      "Let's focus on the present moment.",
+      "You're stronger than you think.",
+      "It's okay to take things slow. One step at a time.",
+      "Have you tried any stress-relief techniques recently?",
+      "It's great to see you opening up. Keep going!"
+    ];
+
+    // Achievements definitions with additional possible achievements
+    const achievements = {
+      firstMessage: { name: "First Message", description: "Send your first message", achieved: false },
+      fiveMessages: { name: "Chatty", description: "Send five messages", achieved: false },
+      tenMessages: { name: "Conversationalist", description: "Send ten messages", achieved: false },
+      firstMoodLog: { name: "Mood Tracker", description: "Log your mood for the first time", achieved: false },
+      fiveMoodLogs: { name: "Consistent Tracker", description: "Log your mood five times", achieved: false },
+      profileUpdate: { name: "Profile Pro", description: "Update your profile", achieved: false },
+      forumPost: { name: "Forum Friend", description: "Make a forum post", achieved: false },
+      twentyMessages: { name: "All Ears", description: "Send twenty messages", achieved: false },
+      firstJournalEntry: { name: "Journal Keeper", description: "Save your first journal entry", achieved: false },
+      fiveJournalEntries: { name: "Reflective Writer", description: "Save five journal entries", achieved: false },
+      firstGoalSet: { name: "Goal Setter", description: "Set your first goal", achieved: false }
+    };
+
+    // Load achievements from localStorage
+    function loadAchievements() {
+      const storedAchievements = JSON.parse(localStorage.getItem('achievements'));
+      if (storedAchievements) {
+        Object.keys(achievements).forEach(key => {
+          achievements[key].achieved = storedAchievements[key]?.achieved;
+        });
+      }
+    }
+
+    // Save achievements to localStorage
+    function saveAchievements() {
+      localStorage.setItem('achievements', JSON.stringify(achievements));
+    }
+
+    // Check achievements progress
+    function checkAchievements() {
+      const messageCount = parseInt(localStorage.getItem('messageCount') || '0');
+      const moodLogCount = parseInt(localStorage.getItem('moodLogCount') || '0');
+      const forumPostCount = parseInt(localStorage.getItem('forumPostCount') || '0');
+      const journalEntryCount = parseInt(localStorage.getItem('journalEntryCount') || '0');
+      const goalCount = parseInt(localStorage.getItem('goalCount') || '0');
+
+      if (messageCount >= 1 && !achievements.firstMessage.achieved) {
+        achievements.firstMessage.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.firstMessage.name}`);
+      }
+      if (messageCount >= 5 && !achievements.fiveMessages.achieved) {
+        achievements.fiveMessages.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.fiveMessages.name}`);
+      }
+      if (messageCount >= 10 && !achievements.tenMessages.achieved) {
+        achievements.tenMessages.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.tenMessages.name}`);
+      }
+      if (moodLogCount >= 1 && !achievements.firstMoodLog.achieved) {
+        achievements.firstMoodLog.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.firstMoodLog.name}`);
+      }
+      if (moodLogCount >= 5 && !achievements.fiveMoodLogs.achieved) {
+        achievements.fiveMoodLogs.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.fiveMoodLogs.name}`);
+      }
+      if (forumPostCount >= 1 && !achievements.forumPost.achieved) {
+        achievements.forumPost.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.forumPost.name}`);
+      }
+      if (journalEntryCount >= 1 && !achievements.firstJournalEntry.achieved) {
+        achievements.firstJournalEntry.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.firstJournalEntry.name}`);
+      }
+      if (journalEntryCount >= 5 && !achievements.fiveJournalEntries.achieved) {
+        achievements.fiveJournalEntries.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.fiveJournalEntries.name}`);
+      }
+      if (goalCount >= 1 && !achievements.firstGoalSet.achieved) {
+        achievements.firstGoalSet.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.firstGoalSet.name}`);
+      }
+
+      saveAchievements();
+      displayAchievements();
+    }
+
+    // Display achievements visually
+    function displayAchievements() {
+      const achievementsContainer = document.getElementById('achievementsList');
+      achievementsContainer.innerHTML = '';
+      for (let key in achievements) {
+        const ach = achievements[key];
+        if (ach.achieved) {
+          achievementsContainer.innerHTML += `
+            <div class="achievement-badge bg-green-100">
+              <img src="https://place-hold.it/40" alt="Badge" class="rounded-full mr-2"/>
+              <div>
+                <h3 class="text-blue-600 font-bold">${ach.name}</h3>
+                <p class="text-gray-700 text-sm">${ach.description}</p>
+              </div>
+            </div>
+          `;
+        } else {
+          achievementsContainer.innerHTML += `
+            <div class="achievement-badge bg-gray-100">
+              <img src="https://place-hold.it/40?text=?" alt="Locked Badge" class="rounded-full mr-2"/>
+              <div>
+                <h3 class="text-gray-400 font-bold">${ach.name} (Locked)</h3>
+                <p class="text-gray-400 text-sm">${ach.description}</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Send message to chatbot
+    async function sendMessage() {
+      const messageInput = document.getElementById('messageInput');
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      const chatWindow = document.getElementById('chatWindow');
+      const userMessage = document.createElement('div');
+      userMessage.className = 'chat-message mb-2 slide-down';
+      userMessage.innerHTML = `
+        <div class="flex items-start">
+          <img alt="User avatar" class="w-10 h-10 rounded-full mr-2" src="https://place-hold.it/40x40?text=U" />
+          <div class="bg-green-100 p-2 rounded">
+            <p class="text-gray-700">${message}</p>
+          </div>
+        </div>
+      `;
+      chatWindow.appendChild(userMessage);
+      messageInput.value = '';
+
+      // Update message count
+      const messageCount = parseInt(localStorage.getItem('messageCount') || '0') + 1;
+      localStorage.setItem('messageCount', messageCount);
+
+      // Bot response
+      const botResponse = responses[Math.floor(Math.random() * responses.length)];
+      const botMessage = document.createElement('div');
+      botMessage.className = 'chat-message mb-2 slide-down';
+      botMessage.innerHTML = `
+        <div class="flex items-start">
+          <img alt="Chatbot avatar" class="w-10 h-10 rounded-full mr-2" src="https://place-hold.it/40x40?text=B" />
+          <div class="bg-blue-100 p-2 rounded">
+            <p class="text-gray-700">${botResponse}</p>
+          </div>
+        </div>
+      `;
+      chatWindow.appendChild(botMessage);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      checkAchievements();
+    }
+
+    // Set chat prompt
+    function setPrompt(prompt) {
+      document.getElementById('messageInput').value = prompt;
+    }
+
+    // Log mood function
+    function logMood() {
+      const moodLoggerInput = document.getElementById('moodLoggerInput');
+      const mood = moodLoggerInput.value.trim();
+      if (!mood) return;
+
+      const moodLogCount = parseInt(localStorage.getItem('moodLogCount') || '0') + 1;
+      localStorage.setItem('moodLogCount', moodLogCount);
+      alert('Mood logged successfully: ' + mood);
+      moodLoggerInput.value = '';
+      checkAchievements();
+    }
+
+    // Save Journal Entry
+    function logJournal() {
+      const journalInput = document.getElementById('journalInput').value;
+      if (!journalInput) return;
+
+      const journalEntryCount = parseInt(localStorage.getItem('journalEntryCount') || '0') + 1;
+      localStorage.setItem('journalEntryCount', journalEntryCount);
+      
+      alert('Your journal entry has been saved: ' + journalInput);
+      document.getElementById('journalInput').value = '';
+      checkAchievements();
+    }
+
+    // Set Goal
+    function setGoal() {
+      const goalName = document.getElementById('goalName').value.trim();
+      const goalDate = document.getElementById('goalDate').value.trim();
+      const goalDescription = document.getElementById('goalDescription').value.trim();
+      if (!goalName || !goalDate || !goalDescription) return;
+
+      alert(`Goal Set: ${goalName} by ${goalDate}\nDescription: ${goalDescription}`);
+      const goalCount = parseInt(localStorage.getItem('goalCount') || '0') + 1;
+      localStorage.setItem('goalCount', goalCount);
+      // Unlock the goal achievement
+      if (goalCount === 1) {
+        achievements.firstGoalSet.achieved = true;
+        alert(`Achievement Unlocked: ${achievements.firstGoalSet.name}`);
+      }
+      saveAchievements();
+      document.getElementById('goalForm').reset();
+    }
+
+    // Save forum post
+    function saveForumPost() {
+      const forumPostInput = document.getElementById('forumPostInput').value.trim();
+      if (!forumPostInput) return;
+      
+      // Add post to the discussion list
+      const newPost = document.createElement('div');
+      newPost.className = 'bg-white shadow-md rounded p-4 mt-4 slide-down';
+      newPost.innerHTML = `
+        <h4 class="text-lg font-bold text-blue-600">New User Post</h4>
+        <p class="text-gray-700 mt-2">${forumPostInput}</p>
+      `;
+      document.getElementById('forumDiscussions').appendChild(newPost);
+      document.getElementById('forumPostInput').value = '';
+
+      // Update forum post count
+      const forumPostCount = parseInt(localStorage.getItem('forumPostCount') || '0') + 1;
+      localStorage.setItem('forumPostCount', forumPostCount);
+      checkAchievements();
+    }
+
+    // Update profile
+    function updateProfile() {
+      const userName = document.getElementById('profileName').value.trim();
+      const userEmail = document.getElementById('profileEmail').value.trim();
+      if (userName && userEmail) {
+        alert(`Profile Updated!\nName: ${userName}\nEmail: ${userEmail}`);
+        // Unlock the profile update achievement
+        if (!achievements.profileUpdate.achieved) {
+          achievements.profileUpdate.achieved = true;
+          alert(`Achievement Unlocked: ${achievements.profileUpdate.name}`);
+        }
+        saveAchievements();
+        displayAchievements();
+      }
+    }
+
+    // Function to log Arduino data
+    function logArduinoData() {
+      const heartbeatInput = document.getElementById('heartbeatInput').value;
+      const anxietyInput = document.getElementById('anxietyInput').value;
+
+      if (!heartbeatInput || !anxietyInput) {
+        alert('Please fill in both fields.');
+        return;
+      }
+
+      const dataList = document.getElementById('dataList');
+      const newListItem = document.createElement('li');
+      newListItem.textContent = `Heartbeat: ${heartbeatInput} BPM, Anxiety Level: ${anxietyInput}`;
+      
+      dataList.appendChild(newListItem);
+      
+      // Clear inputs
+      document.getElementById('heartbeatInput').value = '';
+      document.getElementById('anxietyInput').value = '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAchievements();
+      checkAchievements();
+      
+      // Send message on Enter key press
+      document.getElementById('messageInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+      
+      // Add additional listeners for goals and journal entries
+      document.getElementById('goalForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        setGoal();
+      });
+    });
+  </script>
+</head>
+<body class="bg-blue-50 font-roboto">
+  <header class="bg-blue-600 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Safe Haven</h1>
+      <nav>
+        <ul class="flex space-x-4">
+          <li><a class="hover:underline" href="#home">Home</a></li>
+          <li><a class="hover:underline" href="#chat">Chat</a></li>
+          <li><a class="hover:underline" href="#resources">Resources</a></li>
+          <li><a class="hover:underline" href="#about">About Us</a></li>
+          <li><a class="hover:underline" href="#profile">Profile</a></li>
+          <li><a class="hover:underline" href="#forums">Forums</a></li>
+          <li><a class="hover:underline" href="#events">Events</a></li>
+          <li><a class="hover:underline" href="#wellness">Wellness</a></li>
+          <li><a class="hover:underline" href="#emergency-contacts">Emergency</a></li>
+          <li><a class="hover:underline" href="#mood-logger">Mood</a></li>
+          <li><a class="hover:underline" href="#journal">Journal</a></li>
+          <li><a class="hover:underline" href="#goals">Goals</a></li>
+          <li><a class="hover:underline" href="#achievements">Achievements</a></li>
+          <li><a class="hover:underline" href="#arduino-data">Arduino Data</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto p-4">
+    <!-- Home Screen -->
+    <section class="my-8" id="home">
+      <div class="text-center">
+        <h2 class="text-3xl font-bold text-blue-700">Welcome to Safe Haven</h2>
+        <p class="mt-4 text-lg text-gray-700">Providing support and resources for teens' mental health.</p>
+        <div class="mt-8 flex justify-center space-x-4">
+          <a class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 highlight" href="#chat">Start Chat</a>
+          <a class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 highlight" href="#resources">View Resources</a>
+          <a class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 highlight" href="#about">Learn More</a>
+        </div>
+      </div>
+      <div class="mt-8 flex justify-center">
+        <img src="https://www.verywellmind.com/thmb/7GxC8g9wfLPAEZTYNuA02BGOUjA=/2121x1414/filters:fill(FFDB5D,1)/GettyImages-175500252-5b02b71bfa6bcc0036ea5c88.jpg" alt="Safe Haven Home" class="rounded shadow"/>
+      </div>
+    </section>
+
+    <!-- Chatbot Interface -->
+    <section class="my-8" id="chat">
+      <h2 class="text-2xl font-bold text-blue-700">Chat with Us</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <div class="chat-window bg-blue-50 p-4 rounded scrollable" id="chatWindow"></div>
+        <div class="mt-4 flex items-center">
+          <input class="flex-grow border-2 border-gray-300 p-2 rounded mr-2" id="messageInput" placeholder="Type your message..." type="text"/>
+          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+          <a class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 ml-2" href="https://www.youtube.com/watch?v=2ZpHvVtALnA" target="_blank">Panic Button</a>
+        </div>
+        <div class="mt-4">
+          <h3 class="text-lg font-bold text-blue-600">Suggested Prompts:</h3>
+          <div class="flex space-x-2 mt-2">
+            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 highlight" onclick="setPrompt('I am feeling anxious.')">I am feeling anxious.</button>
+            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 highlight" onclick="setPrompt('Can you help me with stress management?')">Help with stress management</button>
+            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 highlight" onclick="setPrompt('I need someone to talk to.')">I need someone to talk to.</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section class="my-8" id="resources">
+      <h2 class="text-2xl font-bold text-blue-700">Resources</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Managing Anxiety</h3>
+        <p class="text-gray-700">Find tips and strategies for managing anxiety effectively through articles, videos, and guides.</p>
+        <div class="mt-4">
+          <!-- YouTube Video Embed 1 -->
+          <div class="bg-white shadow-md rounded p-4 mt-4">
+            <h3 class="text-xl font-bold text-blue-600">Stress Management - Guided Meditation</h3>
+            <div class="mt-2 flex">
+              <img class="mr-4 w-36 h-auto rounded" src="https://img.youtube.com/vi/xlkYC5j2nAE/hqdefault.jpg" alt="Guided Meditation Thumbnail">
+              <div>
+                <p class="text-gray-700">Learn effective stress management techniques through guided meditation.</p>
+                <a class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-2 inline-block" href="https://www.youtube.com/watch?v=xlkYC5j2nAE" target="_blank">Watch Video</a>
+              </div>
+            </div>
+          </div>
+          <!-- YouTube Video Embed 2 -->
+          <div class="bg-white shadow-md rounded p-4 mt-4">
+            <h3 class="text-xl font-bold text-blue-600">Mindfulness for Anxiety</h3>
+            <div class="mt-2 flex">
+              <img class="mr-4 w-36 h-auto rounded" src="https://img.youtube.com/vi/mwEpHqbqk5o/hqdefault.jpg" alt="Mindfulness Thumbnail">
+              <div>
+                <p class="text-gray-700">Practice mindfulness to reduce anxiety and improve mental well-being.</p>
+                <a class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-2 inline-block" href="https://www.youtube.com/watch?v=mwEpHqbqk5o" target="_blank">Watch Video</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h3 class="text-xl font-bold text-blue-600 mt-4">Stress Management</h3>
+        <p class="text-gray-700">Explore techniques to manage stress, including mindfulness exercises and progressive muscle relaxation.</p>
+        <img src="https://www.helpguide.org/wp-content/uploads/woman-relaxing-stretching-outdoors-768.jpg" alt="Resources" class="rounded mt-4 slide-down"/>
+      </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="my-8" id="about">
+      <h2 class="text-2xl font-bold text-blue-700">About Us</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <p class="text-gray-700">Learn about our mission and the dedicated team working to improve mental health support for teens.</p>
+        <img src="https://www.mind.org.uk/media-a/6102/gettyimages-769192285-happy-black-women-in-office-2400x1600px_0.jpg" alt="About Us" class="rounded mt-4 slide-down"/>
+      </div>
+    </section>
+
+    <!-- Profile Section -->
+    <section class="my-8" id="profile">
+      <h2 class="text-2xl font-bold text-blue-700">Profile</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Update Your Profile</h3>
+        <div class="mt-4">
+          <label class="block text-gray-700 font-bold mb-2" for="profileName">Name</label>
+          <input class="w-full border-2 border-gray-300 p-2 rounded" id="profileName" type="text" placeholder="Enter your name"/>
+
+          <label class="block text-gray-700 font-bold mb-2 mt-4" for="profileEmail">Email</label>
+          <input class="w-full border-2 border-gray-300 p-2 rounded" id="profileEmail" type="email" placeholder="Enter your email"/>
+
+          <label class="block text-gray-700 font-bold mb-2 mt-4" for="profilePic">Profile Picture</label>
+          <div class="flex items-center">
+            <img src="https://place-hold.it/80" alt="User PFP" class="rounded-full mr-4"/>
+            <input class="border-2 border-gray-300 p-2 rounded" id="profilePic" type="file"/>
+          </div>
+
+          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-4 highlight" onclick="updateProfile()">Save Profile</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Forums Section -->
+    <section class="my-8" id="forums">
+      <h2 class="text-2xl font-bold text-blue-700">Discussion Forums</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Mental Health Topics</h3>
+        <p class="text-gray-700">Share your experiences and get support from peers in our forums.</p>
+        <div class="mt-4">
+          <textarea id="forumPostInput" rows="4" class="w-full border-2 border-gray-300 p-2 rounded" placeholder="Write your forum post..."></textarea>
+          <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-2 highlight" onclick="saveForumPost()">Post</button>
+        </div>
+      </div>
+      <div id="forumDiscussions" class="mt-4"></div>
+    </section>
+
+    <!-- Events Section -->
+    <section class="my-8" id="events">
+      <h2 class="text-2xl font-bold text-blue-700">Upcoming Events</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Workshops and Webinars</h3>
+        <p class="text-gray-700">Join our workshops & webinars hosted by mental health professionals.</p>
+        <ul class="list-disc list-inside mt-2 text-gray-700">
+          <li>Mindfulness 101 – 12/15/2025</li>
+          <li>Stress Relief with Yoga – 01/09/2026</li>
+          <li>Teens Talk Mental Health Live Chat – 01/20/2026</li>
+          <li>Anxiety & You: Coping Skills – 02/05/2026</li>
+        </ul>
+        <img src="https://www.psychreg.org/wp-content/uploads/2020/11/mental-health-webinars-896x504.jpg" alt="Events" class="rounded mt-4 slide-down"/>
+      </div>
+    </section>
+
+    <!-- Wellness Section -->
+    <section class="my-8" id="wellness">
+      <h2 class="text-2xl font-bold text-blue-700">Wellness Activities</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Mindfulness and Relaxation</h3>
+        <p class="text-gray-700">Engage in mindfulness exercises and relaxation techniques to boost your well-being. Consider practicing yoga, meditation, or outdoor activities to enhance your peace of mind.</p>
+        <img src="https://www.rethink.org/media/3881/mindfulness-meditation-class-image.jpg" alt="Wellness" class="rounded mt-4 slide-down"/>
+      </div>
+    </section>
+
+    <!-- Emergency Contacts Section -->
+    <section class="my-8" id="emergency-contacts">
+      <h2 class="text-2xl font-bold text-blue-700">Emergency Contacts</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Reach Out for Immediate Help</h3>
+        <p class="text-gray-700">In case of an emergency, contact these helplines:</p>
+        <ul class="list-disc list-inside text-gray-700">
+          <li>National Suicide Prevention Lifeline: <a href="tel:1-800-273-8255">1-800-273-8255</a></li>
+          <li>Crisis Text Line: Text "HELLO" to 741741</li>
+          <li>National Alliance on Mental Illness (NAMI) Helpline: 1-800-950-6264</li>
+          <li>Emergency Services: <a href="tel:911">911</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Mood Logger Section -->
+    <section class="my-8" id="mood-logger">
+      <h2 class="text-2xl font-bold text-blue-700">Mood Logger</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Log Your Mood</h3>
+        <div class="mt-2">
+          <input class="flex-grow border-2 border-gray-300 p-2 rounded mr-2" id="moodLoggerInput" placeholder="How are you feeling?" type="text"/>
+          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="logMood()">Log Mood</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Journal Section -->
+    <section class="my-8" id="journal">
+      <h2 class="text-2xl font-bold text-blue-700">Journal</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Your Thoughts</h3>
+        <div class="mt-2">
+          <textarea class="w-full border-2 border-gray-300 p-2 rounded mr-2" id="journalInput" placeholder="Write your thoughts here..." rows="4"></textarea>
+          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-2" onclick="logJournal()">Save Entry</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Goals Section -->
+    <section class="my-8" id="goals">
+      <h2 class="text-2xl font-bold text-blue-700">Set Your Goals</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <form id="goalForm" onsubmit="event.preventDefault(); setGoal();">
+          <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="goalName">Goal Name</label>
+            <input class="w-full border-2 border-gray-300 p-2 rounded" id="goalName" type="text" placeholder="Enter your goal"/>
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="goalDate">Date to Achieve</label>
+            <input class="w-full border-2 border-gray-300 p-2 rounded" id="goalDate" type="date"/>
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="goalDescription">Description</label>
+            <textarea class="w-full border-2 border-gray-300 p-2 rounded" id="goalDescription" rows="3" placeholder="Describe your goal"></textarea>
+          </div>
+          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" type="submit">Set Goal</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Achievements Section -->
+    <section class="my-8" id="achievements">
+      <h2 class="text-2xl font-bold text-blue-700">Achievements</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Your Progress</h3>
+        <p class="text-gray-700">Earn badges and achievements as you engage with the app. Complete activities (daily check-ins, journaling, posts, etc.) to unlock new badges.</p>
+        <div id="achievementsList" class="mt-4"></div>
+      </div>
+    </section>
+
+    <!-- Arduino Data Section -->
+    <section class="my-8" id="arduino-data">
+      <h2 class="text-2xl font-bold text-blue-700">Arduino Data Input</h2>
+      <div class="bg-white shadow-md rounded p-4 mt-4">
+        <h3 class="text-xl font-bold text-blue-600">Log Your Data</h3>
+        <div class="mt-2">
+          <label class="block text-gray-700 font-bold mb-2" for="heartbeatInput">Heartbeat Data (BPM)</label>
+          <input class="w-full border-2 border-gray-300 p-2 rounded" id="heartbeatInput" type="number" placeholder="Enter your heartbeat data"/>
+          
+          <label class="block text-gray-700 font-bold mb-2 mt-4" for="anxietyInput">Anxiety Level (1-10)</label>
+          <input class="w-full border-2 border-gray-300 p-2 rounded" id="anxietyInput" type="number" min="1" max="10" placeholder="Rate your anxiety level"/>
+
+          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-4" onclick="logArduinoData()">Log Data</button>
+        </div>
+
+        <div class="data-log mt-4">
+          <h4 class="text-lg font-bold text-blue-600">Logged Data</h4>
+          <ul class="list-disc pl-5" id="dataList"></ul>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+</body>
+</html>
